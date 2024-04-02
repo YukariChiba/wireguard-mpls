@@ -32,7 +32,7 @@ Setup wireguard tunnels as usual, route MPLS traffic into wg interfaces, and enj
 - [x] MPLS handing (receive)
 - [ ] Multi-layer MPLS headers handling (non-IP inner protocol handling?)
 - [ ] Adjust MPLS to use MTU 1420
-- [ ] BUG: encap ip packet from wg1, decap mpls and send to wg2 
+- [x] BUG: encap ip packet from wg1, decap mpls and send to wg2 
 
 ## Test
 
