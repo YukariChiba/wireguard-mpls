@@ -45,8 +45,10 @@ function connect_node()
   else
     sudo ip netns exec ${NETNS_PFX}-$nodeid_a sysctl -w "net.mpls.platform_labels=114514"
     sudo ip netns exec ${NETNS_PFX}-$nodeid_a sysctl -w "net.mpls.conf.${UPPER_IF_PFX}-${nodeid_b}.input=1"
+    #sudo ip netns exec ${NETNS_PFX}-$nodeid_a sysctl -w "net.mpls.conf.${LOWER_IF_PFX}-${nodeid_b}.input=1"
     sudo ip netns exec ${NETNS_PFX}-$nodeid_b sysctl -w "net.mpls.platform_labels=114514"
     sudo ip netns exec ${NETNS_PFX}-$nodeid_b sysctl -w "net.mpls.conf.${UPPER_IF_PFX}-${nodeid_a}.input=1"
+    #sudo ip netns exec ${NETNS_PFX}-$nodeid_b sysctl -w "net.mpls.conf.${LOWER_IF_PFX}-${nodeid_a}.input=1"
   fi
 
   sudo ip netns exec ${NETNS_PFX}-$nodeid_a wg set ${UPPER_IF_PFX}-${nodeid_b} listen-port ${PORT_PFX}${nodeid_b} private-key /tmp/wg-test.key.$nodeid_a
@@ -122,6 +124,9 @@ connect_node 3 4 1
 connect_node 4 5 1
 connect_node 5 6
 
+# 1 -(w)-> 2 -(wl)-> 3 -(wl)-> 4 -(el)-> 5 -(w)-> 6
+# 1 <-(w)- 2 <-(el)- 3 <-(wl)- 4 <-(wl)- 5 <-(w)- 6
+
 route_node_encap 2 3 default 101
 route_node_encap 5 4 default 201
 
@@ -131,8 +136,8 @@ route_node_mpls 4 3 201 202
 route_node_mpls 4 5 102 103
 route_node_mpls 3 2 202 203
 
-route_node_mpls_eth 5 6 103
-route_node_mpls_eth 2 1 203
+route_node_mpls 5 6 103
+route_node_mpls 2 1 203
 
 route_node 1 2 default
 route_node 6 5 default

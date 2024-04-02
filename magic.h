@@ -32,6 +32,7 @@ static inline void encap_mpls(struct sk_buff *skb){
         hdr = mpls_hdr(skb);
         hdr->label_stack_entry = 
              mpls_entry_encode(skb->reserved_tailroom, inner_ttl, 0, true).label_stack_entry;
+        skb->reserved_tailroom = 0;
     }
 }
 
