@@ -81,7 +81,7 @@ static inline bool wg_check_packet_protocol(struct sk_buff *skb)
 
 static inline void wg_reset_packet(struct sk_buff *skb, bool encapsulating)
 {
-	u32 mplslabel = skb->reserved_tailroom;
+	u32 mplsheader = skb->reserved_tailroom;
 	u8 l4_hash = skb->l4_hash;
 	u8 sw_hash = skb->sw_hash;
 	u32 hash = skb->hash;
@@ -108,7 +108,7 @@ static inline void wg_reset_packet(struct sk_buff *skb, bool encapsulating)
 	skb_probe_transport_header(skb);
 	skb_reset_inner_headers(skb);
 	if(!encapsulating)
-		skb->reserved_tailroom = mplslabel;
+		skb->reserved_tailroom = mplsheader;
 }
 
 static inline int wg_cpumask_choose_online(int *stored_cpu, unsigned int id)

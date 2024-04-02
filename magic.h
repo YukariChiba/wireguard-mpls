@@ -15,8 +15,8 @@ static inline bool decap_mpls(struct sk_buff *skb){
 	__be16 real_protocol = ip_tunnel_parse_protocol(skb);
     if (real_protocol == htons(ETH_P_IP) || real_protocol == htons(ETH_P_IPV6)) {
         skb->protocol = real_protocol;
-        // use reserved tailroom for mpls tags
-        skb->reserved_tailroom = be32_to_cpu(hdr->label_stack_entry) >>12;
+        // use reserved tailroom for mpls label + exp + bos
+        skb->reserved_tailroom = be32_to_cpu(hdr->label_stack_entry) >>8;
         return true;
     }
     return false;
@@ -31,7 +31,12 @@ static inline void encap_mpls(struct sk_buff *skb){
         struct mpls_shim_hdr *hdr;
         hdr = mpls_hdr(skb);
         hdr->label_stack_entry = 
-             mpls_entry_encode(skb->reserved_tailroom, inner_ttl, 0, true).label_stack_entry;
+            mpls_entry_encode(
+                skb->reserved_tailroom >>4, // label
+                inner_ttl, // ttl
+                (skb->reserved_tailroom >>1)&0b111, // exp
+                skb->reserved_tailroom & 1 // bos
+            ).label_stack_entry;
         skb->reserved_tailroom = 0;
     }
 }

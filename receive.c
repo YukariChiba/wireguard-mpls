@@ -26,7 +26,7 @@ static void update_rx_stats(struct wg_peer *peer, size_t len)
 }
 
 #define SKB_TYPE_LE32(skb) (((struct message_header *)(skb)->data)->type & 0b1111)
-#define SKB_LABEL_LE32(skb) (((struct message_header *)(skb)->data)->type>>8)
+#define SKB_MPLSHDR_LE32(skb) (((struct message_header *)(skb)->data)->type>>8)
 
 static size_t validate_header_len(struct sk_buff *skb)
 {
@@ -577,7 +577,7 @@ void wg_packet_receive(struct wg_device *wg, struct sk_buff *skb)
 	}
 	case cpu_to_le32(MESSAGE_DATA):
 		PACKET_CB(skb)->ds = ip_tunnel_get_dsfield(ip_hdr(skb), skb);
-		skb->reserved_tailroom = SKB_LABEL_LE32(skb);
+		skb->reserved_tailroom = SKB_MPLSHDR_LE32(skb);
 		wg_packet_consume_data(wg, skb);
 		break;
 	default:
