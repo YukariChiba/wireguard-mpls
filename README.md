@@ -2,6 +2,26 @@
 
 Wireguard, but compatible with mpls, no MTU overhead.
 
+## How
+
+- Decapsulate MPLS header before sending traffic out of WG interface
+- Encapsulate MPLS header after receiving traffic from WG interface
+- Use linktype `link/void` to allow raw MPLS header without ether frame
+- Use back progagation of TTL from inner IP header to restore MPLS TTL
+
+```
+(IP) ==[encap]==> (MPLS|IP) ==[wg-decap]==> (WG|IP) ==[wg-encap]==> (MPLS|IP) ==[decap]==> (IP)
+
+╔═══════════════════════════════════════════════════════════════════════════════════╗
+║                               MPLS Header                                         ║
+╠══════════════════════════════╦═══════╦═══════╦════════════════════════════════════╣
+║ Label                        ║ Exp   ║ BoS   ║ TTL                                ║
+║ 20 bit                       ║ 3 bit ║ 1 bit ║ 8 bit                              ║
+╠══════════════════════════════╩═══════╩═══════╬════════════════════════════════════╣
+║   Put in Wireguard reserved zeros (24 bit)   ║ Extracted from inner IP header TTL ║
+╚══════════════════════════════════════════════╩════════════════════════════════════╝
+```
+
 ## Source
 
 The origin code is copied from wireguard kernel module from linux-6.8.2.
@@ -43,3 +63,4 @@ Setup wireguard tunnels as usual, route MPLS traffic into wg interfaces, and enj
 ## Benchmark
 
 `WIP`
+(From the results of known tests, there is little difference in performance)

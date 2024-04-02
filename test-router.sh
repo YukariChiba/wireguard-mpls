@@ -124,8 +124,8 @@ connect_node 3 4 1
 connect_node 4 5 1
 connect_node 5 6
 
-# 1 -(w)-> 2 -(wl)-> 3 -(wl)-> 4 -(el)-> 5 -(w)-> 6
-# 1 <-(w)- 2 <-(el)- 3 <-(wl)- 4 <-(wl)- 5 <-(w)- 6
+# 1 -(w)-> 2 -(w|101)-> 3 -(w|102)-> 4 -(w|103)-> 5 -(w)-> 6
+# 1 <-(w)- 2 <-(w|203)- 3 <-(w|202)- 4 <-(w|201)- 5 <-(w)- 6
 
 route_node_encap 2 3 default 101
 route_node_encap 5 4 default 201
@@ -145,6 +145,8 @@ route_node 6 5 default
 route_node 2 1 ${MPLS_IP_PFX}.1/32
 route_node 5 6 ${MPLS_IP_PFX}.6/32
 
+sudo ip netns exec ${NETNS_PFX}-1 traceroute -e -I ${MPLS_IP_PFX}.6 -w 0.3 -q 1 -n
+sudo ip netns exec ${NETNS_PFX}-6 traceroute -e -I ${MPLS_IP_PFX}.1 -w 0.3 -q 1 -n
 read -p "Press any key to continue..."
 
 for lnode in 1 2 3 4 5 6; do
