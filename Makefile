@@ -20,6 +20,15 @@ wireguard-m += netlink.o
 wireguard-m += magic.o
 
 default:
-	make -C $(KDIR) M=$(PWD) modules
+	make -j$(nproc) -C $(KDIR) M=$(PWD) modules
 clean:
-	make -C $(KDIR) M=$(PWD) clean
+	make -j$(nproc) -C $(KDIR) M=$(PWD) clean
+
+test-install: default
+	./test-install.sh
+
+test-tunnel: test-install
+	./test-tunnel.sh
+
+test-router: test-install
+	./test-router.sh

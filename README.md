@@ -28,7 +28,8 @@ The origin code is copied from wireguard kernel module from linux-6.8.2.
 
 ## Compile
 
-`make`
+- `make`
+- use `wireguard.ko`
 
 ## Usage
 
@@ -56,9 +57,9 @@ Setup wireguard tunnels as usual, route MPLS traffic into wg interfaces, and enj
 
 ## Test
 
-- `test-install.sh`: replace current wireguard with wireguard-mpls.
-- `test-tunnel.sh`: set up a tunnel from host to netns with MPLS routing.
-- `test-router.sh`: set up 6 netns and 5 tunnels with MPLS routing.
+- `make test-install`: replace current wireguard with wireguard-mpls.
+- `make test-tunnel`: set up a tunnel from host to netns with MPLS routing.
+- `make test-router`: set up 6 netns and 5 tunnels with MPLS routing, run traceroutes.
 
 ## Benchmark
 
