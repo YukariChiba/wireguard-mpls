@@ -16,6 +16,8 @@
 #include <linux/udp.h>
 #include <net/ip_tunnels.h>
 
+#include "magic.h"
+
 /* Must be called with bh disabled. */
 static void update_rx_stats(struct wg_peer *peer, size_t len)
 {
@@ -23,7 +25,8 @@ static void update_rx_stats(struct wg_peer *peer, size_t len)
 	peer->rx_bytes += len;
 }
 
-#define SKB_TYPE_LE32(skb) (((struct message_header *)(skb)->data)->type)
+#define SKB_TYPE_LE32(skb) (((struct message_header *)(skb)->data)->type & 0b1111)
+#define SKB_LABEL_LE32(skb) (((struct message_header *)(skb)->data)->type>>8)
 
 static size_t validate_header_len(struct sk_buff *skb)
 {
@@ -408,6 +411,7 @@ static void wg_packet_consume_data_done(struct wg_peer *peer,
 	if (unlikely(routed_peer != peer))
 		goto dishonest_packet_peer;
 
+	encap_mpls(skb);
 	napi_gro_receive(&peer->napi, skb);
 	update_rx_stats(peer, message_data_len(len_before_trim));
 	return;
@@ -573,6 +577,7 @@ void wg_packet_receive(struct wg_device *wg, struct sk_buff *skb)
 	}
 	case cpu_to_le32(MESSAGE_DATA):
 		PACKET_CB(skb)->ds = ip_tunnel_get_dsfield(ip_hdr(skb), skb);
+		skb->reserved_tailroom = SKB_LABEL_LE32(skb);
 		wg_packet_consume_data(wg, skb);
 		break;
 	default:

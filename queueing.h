@@ -13,6 +13,8 @@
 #include <linux/ipv6.h>
 #include <net/ip_tunnels.h>
 
+#include "magic.h"
+
 struct wg_device;
 struct wg_peer;
 struct multicore_worker;
@@ -70,11 +72,16 @@ struct packet_cb {
 static inline bool wg_check_packet_protocol(struct sk_buff *skb)
 {
 	__be16 real_protocol = ip_tunnel_parse_protocol(skb);
+	// if is not ip protocol, test for mpls
+	if (!real_protocol) {
+		return decap_mpls(skb);
+	}
 	return real_protocol && skb->protocol == real_protocol;
 }
 
 static inline void wg_reset_packet(struct sk_buff *skb, bool encapsulating)
 {
+	u32 mplslabel = skb->reserved_tailroom;
 	u8 l4_hash = skb->l4_hash;
 	u8 sw_hash = skb->sw_hash;
 	u32 hash = skb->hash;
@@ -100,6 +107,8 @@ static inline void wg_reset_packet(struct sk_buff *skb, bool encapsulating)
 	skb_reset_transport_header(skb);
 	skb_probe_transport_header(skb);
 	skb_reset_inner_headers(skb);
+	if(!encapsulating)
+		skb->reserved_tailroom = mplslabel;
 }
 
 static inline int wg_cpumask_choose_online(int *stored_cpu, unsigned int id)

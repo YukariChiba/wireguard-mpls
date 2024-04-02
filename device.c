@@ -288,7 +288,7 @@ static void wg_setup(struct net_device *dev)
 	dev->addr_len = 0;
 	dev->needed_headroom = DATA_PACKET_HEAD_ROOM;
 	dev->needed_tailroom = noise_encrypted_len(MESSAGE_PADDING_MULTIPLE);
-	dev->type = ARPHRD_NONE;
+	dev->type = ARPHRD_VOID;
 	dev->flags = IFF_POINTOPOINT | IFF_NOARP;
 	dev->priv_flags |= IFF_NO_QUEUE;
 	dev->features |= NETIF_F_LLTX;
