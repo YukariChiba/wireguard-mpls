@@ -24,7 +24,11 @@ static inline bool decap_mpls(struct sk_buff *skb){
 
 static inline void encap_mpls(struct sk_buff *skb){
     if (skb->reserved_tailroom){
-        __u8 inner_ttl = ip_hdr(skb)->ttl;
+        __u8 inner_ttl;
+        if (ip_hdr(skb)->version == 6)
+            inner_ttl = ipv6_hdr(skb)->hop_limit;
+        else
+            inner_ttl = ip_hdr(skb)->ttl;
         skb->protocol = htons(ETH_P_MPLS_UC);
         skb_push(skb, MPLS_HLEN);
         skb_reset_network_header(skb);
