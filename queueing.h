@@ -71,12 +71,15 @@ struct packet_cb {
 
 static inline bool wg_check_packet_protocol(struct sk_buff *skb)
 {
-	__be16 real_protocol = ip_tunnel_parse_protocol(skb);
-	// if is not ip protocol, test for mpls
-	if (!real_protocol) {
-		return decap_mpls(skb);
+	switch(skb->protocol) {
+		case htons(ETH_P_MPLS_UC): {
+			return decap_mpls(skb);
+		}
+		default: {
+			__be16 real_protocol = ip_tunnel_parse_protocol(skb);
+			return real_protocol && skb->protocol == real_protocol;
+		}
 	}
-	return real_protocol && skb->protocol == real_protocol;
 }
 
 static inline void wg_reset_packet(struct sk_buff *skb, bool encapsulating)

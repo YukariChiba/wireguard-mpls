@@ -32,3 +32,6 @@ test-tunnel: test-install
 
 test-router: test-install
 	./test-router.sh
+
+test-stack: test-install
+	./test-stack.sh
