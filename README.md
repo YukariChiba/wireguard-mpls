@@ -7,9 +7,20 @@ Wireguard, but compatible with mpls, no MTU overhead.
 - Decapsulate MPLS header before sending traffic out of WG interface
 - Encapsulate MPLS header after receiving traffic from WG interface
 - Use back progagation of TTL from inner IP header to restore MPLS TTL
+- Add `MESSAGE_DATA_MPLS = 5` to avoid conflicts with some providers (e.g., cloudflare)
 
 ```
 (IP) ==[encap]==> (MPLS|IP) ==[wg-decap]==> (WG|IP) ==[wg-encap]==> (MPLS|IP) ==[decap]==> (IP)
+
+╔═══════════════════════════════════════════════════════════════════════════════════╗
+║                               WireGuard Header                                    ║
+╠════════════════════════════════════════════════════════════════╦══════════════════╣
+║ type                                                           ║ others           ║
+║ 32 bit                                                         ║ (we don't care)  ║
+╠══════════════════════════════════════════╦═════════════════════╬══════════════════╣
+║ reserved zero 24 bit                     ║ type 8 bit          ║                  ║
+║ Used for MPLS Label/Exp/BoS              ║ new type for MPLS   ║                  ║
+╚══════════════════════════════════════════╩═════════════════════╩══════════════════╝
 
 ╔═══════════════════════════════════════════════════════════════════════════════════╗
 ║                               MPLS Header                                         ║
