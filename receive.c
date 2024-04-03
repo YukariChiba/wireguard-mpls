@@ -35,6 +35,9 @@ static size_t validate_header_len(struct sk_buff *skb)
 	if (SKB_TYPE_LE32(skb) == cpu_to_le32(MESSAGE_DATA) &&
 	    skb->len >= MESSAGE_MINIMUM_LENGTH)
 		return sizeof(struct message_data);
+	if (SKB_TYPE_LE32(skb) == cpu_to_le32(MESSAGE_DATA_MPLS) &&
+	    skb->len >= MESSAGE_MINIMUM_LENGTH)
+		return sizeof(struct message_data);
 	if (SKB_TYPE_LE32(skb) == cpu_to_le32(MESSAGE_HANDSHAKE_INITIATION) &&
 	    skb->len == sizeof(struct message_handshake_initiation))
 		return sizeof(struct message_handshake_initiation);
@@ -576,6 +579,10 @@ void wg_packet_receive(struct wg_device *wg, struct sk_buff *skb)
 		break;
 	}
 	case cpu_to_le32(MESSAGE_DATA):
+		PACKET_CB(skb)->ds = ip_tunnel_get_dsfield(ip_hdr(skb), skb);
+		wg_packet_consume_data(wg, skb);
+		break;
+	case cpu_to_le32(MESSAGE_DATA_MPLS):
 		PACKET_CB(skb)->ds = ip_tunnel_get_dsfield(ip_hdr(skb), skb);
 		skb->reserved_tailroom = SKB_MPLSHDR_LE32(skb);
 		wg_packet_consume_data(wg, skb);
