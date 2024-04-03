@@ -376,8 +376,15 @@ static void wg_packet_consume_data_done(struct wg_peer *peer,
 		       (ip_hdr(skb)->version == 4 ||
 			(ip_hdr(skb)->version == 6 &&
 			 pskb_network_may_pull(skb, sizeof(struct ipv6hdr)))))))
-		goto dishonest_packet_type;
-
+	{
+		if (skb->reserved_tailroom) { // is mpls
+			if ((skb->reserved_tailroom & 1)) { // not stacked
+				goto dishonest_packet_type;
+			}
+		}
+		else
+			goto dishonest_packet_type;
+	}
 	skb->dev = dev;
 	/* We've already verified the Poly1305 auth tag, which means this packet
 	 * was not modified in transit. We can therefore tell the networking
@@ -388,6 +395,10 @@ static void wg_packet_consume_data_done(struct wg_peer *peer,
 	skb->ip_summed = CHECKSUM_UNNECESSARY;
 	skb->csum_level = ~0; /* All levels */
 	skb->protocol = ip_tunnel_parse_protocol(skb);
+	// set protocol for stacked mpls
+	if (skb->reserved_tailroom) // is mpls
+		if (!(skb->reserved_tailroom & 1)) // stacked
+			skb->protocol = htons(ETH_P_MPLS_UC);
 	if (skb->protocol == htons(ETH_P_IP)) {
 		len = ntohs(ip_hdr(skb)->tot_len);
 		if (unlikely(len < sizeof(struct iphdr)))
@@ -397,6 +408,8 @@ static void wg_packet_consume_data_done(struct wg_peer *peer,
 		len = ntohs(ipv6_hdr(skb)->payload_len) +
 		      sizeof(struct ipv6hdr);
 		INET_ECN_decapsulate(skb, PACKET_CB(skb)->ds, ipv6_get_dsfield(ipv6_hdr(skb)));
+	} else if (skb->protocol == htons(ETH_P_MPLS_UC)) {
+		len = skb->len;
 	} else {
 		goto dishonest_packet_type;
 	}

@@ -356,8 +356,18 @@ int wg_allowedips_read_node(struct allowedips_node *node, u8 ip[16], u8 *cidr)
 struct wg_peer *wg_allowedips_lookup_dst(struct allowedips *table,
 					 struct sk_buff *skb)
 {
-	if (skb->protocol == htons(ETH_P_IP))
+	if (skb->protocol == htons(ETH_P_MPLS_UC)) {
+		__be32 tmp = 0;
+		struct wg_peer *peer;
+		peer = lookup(table->root4, 32, &tmp);
+		if (peer) return peer;
+		peer = lookup(table->root6, 128, &tmp);
+		if (peer) return peer;
+		return NULL;
+	}
+	if (skb->protocol == htons(ETH_P_IP)){
 		return lookup(table->root4, 32, &ip_hdr(skb)->daddr);
+	}
 	else if (skb->protocol == htons(ETH_P_IPV6))
 		return lookup(table->root6, 128, &ipv6_hdr(skb)->daddr);
 	return NULL;
@@ -367,6 +377,15 @@ struct wg_peer *wg_allowedips_lookup_dst(struct allowedips *table,
 struct wg_peer *wg_allowedips_lookup_src(struct allowedips *table,
 					 struct sk_buff *skb)
 {
+	if (skb->protocol == htons(ETH_P_MPLS_UC)) {
+		__be32 tmp = 0;
+		struct wg_peer *peer;
+		peer = lookup(table->root4, 32, &tmp);
+		if (peer) return peer;
+		peer = lookup(table->root6, 128, &tmp);
+		if (peer) return peer;
+		return NULL;
+	}
 	if (skb->protocol == htons(ETH_P_IP))
 		return lookup(table->root4, 32, &ip_hdr(skb)->saddr);
 	else if (skb->protocol == htons(ETH_P_IPV6))
