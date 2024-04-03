@@ -6,7 +6,6 @@ Wireguard, but compatible with mpls, no MTU overhead.
 
 - Decapsulate MPLS header before sending traffic out of WG interface
 - Encapsulate MPLS header after receiving traffic from WG interface
-- Use linktype `link/void` to allow raw MPLS header without ether frame
 - Use back progagation of TTL from inner IP header to restore MPLS TTL
 
 ```
