@@ -10,6 +10,12 @@ PORT_PFX="1000"
 sudo modprobe mpls_router
 sudo modprobe mpls_iptunnel
 
+function sysctl_node()
+{
+  nodeid=$1
+  sudo ip netns exec ${NETNS_PFX}-$nodeid sysctl -w -q "$2"
+}
+
 function setup_node()
 {
   nodeid=$1
@@ -18,13 +24,10 @@ function setup_node()
   sudo ip netns exec ${NETNS_PFX}-$nodeid ip a add ${MPLS_IP_PFX}.${nodeid} dev lo
   sudo ip netns exec ${NETNS_PFX}-$nodeid ip a add ${MPLS_IP6_PFX}::${nodeid} dev lo
 
-  wg genkey > /tmp/wg-test.key.$nodeid
-}
+  sysctl_node $nodeid "net.ipv4.ip_forward=1"
+  sysctl_node $nodeid "net.ipv6.conf.all.forwarding=1"
 
-function sysctl_node()
-{
-  nodeid=$1
-  sudo ip netns exec ${NETNS_PFX}-$nodeid sysctl -w -q "$2"
+  wg genkey > /tmp/wg-test.key.$nodeid
 }
 
 function connect_node()
@@ -48,12 +51,7 @@ function connect_node()
   sudo ip netns exec ${NETNS_PFX}-$nodeid_a ip link add ${UPPER_IF_PFX}-${nodeid_b} type wireguard
   sudo ip netns exec ${NETNS_PFX}-$nodeid_b ip link add ${UPPER_IF_PFX}-${nodeid_a} type wireguard
 
-  if [ -z $mpls ]; then
-    sysctl_node $nodeid_a "net.ipv4.ip_forward=1"
-    sysctl_node $nodeid_b "net.ipv4.ip_forward=1"
-    sysctl_node $nodeid_a "net.ipv6.conf.all.forwarding=1"
-    sysctl_node $nodeid_b "net.ipv6.conf.all.forwarding=1"
-  else
+  if [ ! -z $mpls ]; then
     sysctl_node $nodeid_a "net.mpls.platform_labels=114514"
     sysctl_node $nodeid_a "net.mpls.conf.${UPPER_IF_PFX}-${nodeid_b}.input=1"
     sysctl_node $nodeid_b "net.mpls.platform_labels=114514"
