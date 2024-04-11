@@ -5,6 +5,7 @@
 
 #include "allowedips.h"
 #include "peer.h"
+#include "magic.h"
 
 enum { MAX_ALLOWEDIPS_DEPTH = 129 };
 
@@ -356,7 +357,7 @@ int wg_allowedips_read_node(struct allowedips_node *node, u8 ip[16], u8 *cidr)
 struct wg_peer *wg_allowedips_lookup_dst(struct allowedips *table,
 					 struct sk_buff *skb)
 {
-	if (skb->reserved_tailroom) {
+	if (SKB_MPLS_TYPE(skb)) {
 		__be32 tmp = 0;
 		struct wg_peer *peer;
 		peer = lookup(table->root4, 32, &tmp);
@@ -377,7 +378,7 @@ struct wg_peer *wg_allowedips_lookup_dst(struct allowedips *table,
 struct wg_peer *wg_allowedips_lookup_src(struct allowedips *table,
 					 struct sk_buff *skb)
 {
-	if (skb->reserved_tailroom) {
+	if (SKB_MPLS_TYPE(skb)) {
 		__be32 tmp = 0;
 		struct wg_peer *peer;
 		peer = lookup(table->root4, 32, &tmp);

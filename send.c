@@ -203,8 +203,10 @@ static bool encrypt_packet(struct sk_buff *skb, struct noise_keypair *keypair)
 	 */
 	skb_set_inner_network_header(skb, 0);
 	header = (struct message_data *)skb_push(skb, sizeof(*header));
-	if (skb->reserved_tailroom)
-		header->header.type = cpu_to_le32(MESSAGE_DATA_MPLS | (skb->reserved_tailroom<<8));
+	if (SKB_MPLS_TYPE(skb) == WG_MPLS_UC)
+		header->header.type = cpu_to_le32(MESSAGE_DATA_MPLS | (SKB_MPLS_LABEL(skb)<<8));
+	else if (SKB_MPLS_TYPE(skb) == WG_MPLS_MC)
+		header->header.type = cpu_to_le32(MESSAGE_DATA_MPLS_MC | (SKB_MPLS_LABEL(skb)<<8));
 	else
 		header->header.type = cpu_to_le32(MESSAGE_DATA);
 	header->key_idx = keypair->remote_index;

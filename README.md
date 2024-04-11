@@ -4,10 +4,12 @@ Wireguard, but compatible with mpls, no MTU overhead.
 
 ## How
 
-- Decapsulate MPLS header before sending traffic out of WG interface
-- Encapsulate MPLS header after receiving traffic from WG interface
+- Decapsulate MPLS header (`decap_mpls`) before sending traffic out of WG interface
+- Encapsulate MPLS header (`encap_mpls`) after receiving traffic from WG interface
+- Nearly all magical stuff is in `magic.h`
 - Use back progagation of TTL from inner IP header to restore MPLS TTL
 - Add `MESSAGE_DATA_MPLS = 5` to avoid conflicts with some providers (e.g., cloudflare)
+  - Also add `MESSAGE_DATA_MPLS_MC = 6` as multicast MPLS
 - select `0.0.0.0` and `::` as peer for non-IP(mpls) traffic
 
 ```
@@ -31,6 +33,16 @@ Wireguard, but compatible with mpls, no MTU overhead.
 ╠══════════════════════════════╩═══════╩═══════╬════════════════════════════════════╣
 ║   Put in Wireguard reserved zeros (24 bit)   ║ Extracted from inner IP header TTL ║
 ╚══════════════════════════════════════════════╩════════════════════════════════════╝
+
+╔═══════════════════════════════════════════════════════════════════════════════════╗
+║                            sk_buff reserved room                                  ║
+╠══════════════════════╦════════════════════════════════════════════════════════════╣
+║ type                 ║ MPLS Data (label + exp + bos)                              ║
+║ 8 bit                ║ 24 bit                                                     ║
+╠══════════════════════╬════════════════════════════════════════════════════════════╣
+║ 0 for MPLS_UC        ║ used in wg pkt processing                                  ║
+║ 1 for MPLS_MC        ║ (clear before finish post-receive processing)              ║
+╚══════════════════════╩════════════════════════════════════════════════════════════╝
 ```
 
 ## Source
@@ -54,6 +66,7 @@ Setup wireguard tunnels as usual, route MPLS traffic into wg interfaces, and enj
 - Can not disable MPLS function. Use sysctl for temporary solution.
 - Non-IP traffic would be sent to peers with allowed-ips 0.0.0.0/0 and/or ::/0.
 - There will be MTU issues. For 2 stacked labels, working MTU is reduced to 1408.
+- Multicast MPLS is never tested!
 
 ## TODO
 

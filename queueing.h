@@ -75,6 +75,9 @@ static inline bool wg_check_packet_protocol(struct sk_buff *skb)
 		case htons(ETH_P_MPLS_UC): {
 			return decap_mpls(skb);
 		}
+		case htons(ETH_P_MPLS_MC): {
+			return decap_mpls(skb);
+		}
 		default: {
 			__be16 real_protocol = ip_tunnel_parse_protocol(skb);
 			return real_protocol && skb->protocol == real_protocol;
