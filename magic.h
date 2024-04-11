@@ -38,7 +38,7 @@ static inline bool decap_mpls(struct sk_buff *skb){
 
 static inline void encap_mpls(struct sk_buff *skb){
     if (skb->reserved_tailroom){
-        __u8 inner_ttl;
+        __u8 inner_ttl = 64;
         __be16 inner_protocol = skb->protocol;
         if (inner_protocol == htons(ETH_P_IPV6))
             inner_ttl = ipv6_hdr(skb)->hop_limit;

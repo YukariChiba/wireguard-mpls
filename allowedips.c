@@ -356,7 +356,7 @@ int wg_allowedips_read_node(struct allowedips_node *node, u8 ip[16], u8 *cidr)
 struct wg_peer *wg_allowedips_lookup_dst(struct allowedips *table,
 					 struct sk_buff *skb)
 {
-	if (skb->protocol == htons(ETH_P_MPLS_UC)) {
+	if (skb->reserved_tailroom) {
 		__be32 tmp = 0;
 		struct wg_peer *peer;
 		peer = lookup(table->root4, 32, &tmp);
@@ -377,7 +377,7 @@ struct wg_peer *wg_allowedips_lookup_dst(struct allowedips *table,
 struct wg_peer *wg_allowedips_lookup_src(struct allowedips *table,
 					 struct sk_buff *skb)
 {
-	if (skb->protocol == htons(ETH_P_MPLS_UC)) {
+	if (skb->reserved_tailroom) {
 		__be32 tmp = 0;
 		struct wg_peer *peer;
 		peer = lookup(table->root4, 32, &tmp);
