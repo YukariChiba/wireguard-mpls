@@ -200,10 +200,13 @@ read -p "Press any key to start test..."
 sudo ip netns exec ${NETNS_PFX}-1 ping ${MPLS_IP_PFX}.6 -c 1
 sudo ip netns exec ${NETNS_PFX}-6 ping ${MPLS_IP_PFX}.1 -c 1
 
+sudo ip netns exec ${NETNS_PFX}-1 ping ${MPLS_IP6_PFX}::6 -c 1
+sudo ip netns exec ${NETNS_PFX}-6 ping ${MPLS_IP6_PFX}::1 -c 1
+
 sudo ip netns exec ${NETNS_PFX}-1 traceroute -e -I ${MPLS_IP_PFX}.6 -w 0.3 -q 1 -n
 sudo ip netns exec ${NETNS_PFX}-6 traceroute -e -I ${MPLS_IP_PFX}.1 -w 0.3 -q 1 -n
-sudo ip netns exec ${NETNS_PFX}-1 traceroute6 -e -I ${MPLS_IP6_PFX}::6 -w 0.3 -q 1 -n
-sudo ip netns exec ${NETNS_PFX}-6 traceroute6 -e -I ${MPLS_IP6_PFX}::1 -w 0.3 -q 1 -n
+sudo ip netns exec ${NETNS_PFX}-1 traceroute -e -I ${MPLS_IP6_PFX}::6 -w 0.3 -q 1 -n
+sudo ip netns exec ${NETNS_PFX}-6 traceroute -e -I ${MPLS_IP6_PFX}::1 -w 0.3 -q 1 -n
 read -p "Press any key to exit..."
 
 clean_up

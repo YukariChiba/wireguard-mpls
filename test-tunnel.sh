@@ -61,6 +61,8 @@ sudo ip -M route add 200 as 201 via inet ${NS_WG_IP} dev ${NIC}-wg
 sudo ip netns exec ${NETNS} ip -M route add 201 as 202 via inet ${HOST_WG_IP} dev ${NIC}-wg
 sudo ip -M route add 202 dev lo
 
+echo "Now you can ping 169.254.2.2 from host."
+
 if [ -x "$(command -v tcpdump)" ]; then
   sudo tcpdump -i ${NIC}-wg -nn -l
 elif [ -x "$(command -v wireshark)" ]; then
