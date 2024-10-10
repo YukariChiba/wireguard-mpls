@@ -47,7 +47,7 @@ Wireguard, but compatible with mpls, no MTU overhead.
 
 ## Source
 
-The origin code is copied from wireguard kernel module from linux-6.8.2.
+The origin code is copied from wireguard kernel module from linux-6.10.x.
 
 ## Compile
 
